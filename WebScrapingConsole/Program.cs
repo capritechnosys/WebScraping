@@ -13,9 +13,10 @@ namespace WebScrapingConsole
     {
         static void Main(string[] args)
         {
-            var scraper = new MainPageScraper();
+            string mainUrl = "";
+            var scraper = new MainPageScraper(mainUrl);
             scraper.Start();
-            var listofLinks = scraper.listLinks;
+            var listofLinks = scraper.ListLinks;
             scraper.Stop();
             foreach (var href in listofLinks)
             {
@@ -99,15 +100,21 @@ namespace WebScrapingConsole
 
     public class MainPageScraper : WebScraper
     {
-        public List<string> listLinks { get; set; }
+        public List<string> ListLinks { get; set; }
+        private string MainUrl { get; set; }
+
+        public MainPageScraper(string mainUrl)
+        {
+            MainUrl = mainUrl;
+        }
         public MainPageScraper()
         {
-            listLinks = new List<string>();
+            ListLinks = new List<string>();
         }
         public override void Init()
         {
             this.LoggingLevel = WebScraper.LogLevel.All;
-            this.Request("http://www.americanwineryguide.com/regions/wineries_list/finger-lakes-ava/", Parse);
+            this.Request(MainUrl, Parse);
         }
 
         public override void Parse(Response response)
@@ -118,7 +125,7 @@ namespace WebScrapingConsole
                 {
                     var r = response.XPath(string.Format("/html/body/div[1]/div[3]/div/div[{0}]/ul/li[{1}]/a", i, j));
                     var href = r[0].ChildNodes[0].Attributes["href"];
-                    listLinks.Add(href);
+                    ListLinks.Add(href);
                 }
             }            
             
@@ -127,6 +134,7 @@ namespace WebScrapingConsole
 
     public class SubPageScraper : WebScraper
     {
+        public const string subCommonDomain = "";
         public List<Info> listInfo { get; set; }
         public string subUrl { get; set; }
 
@@ -138,7 +146,7 @@ namespace WebScrapingConsole
         public override void Init()
         {
             this.LoggingLevel = WebScraper.LogLevel.All;
-            string url = string.Format("http://www.americanwineryguide.com{0}", this.subUrl);
+            string url = string.Format("{0}{1}", subCommonDomain, this.subUrl);
             this.Request(url, Parse);
         }
 
